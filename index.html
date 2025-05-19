@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Carta Feliz Día Internacional de la Mujer Marítima</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display&family=Poppins:wght@600&display=swap');
+
+  /* Reset and basics */
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0;
+    height: 100%;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #fefcea, #f1da36);
+    color: #3a2f1d;
+    overflow: hidden;
+  }
+
+  /* Container for envelope and letter full view */
+  #envelopeView, #letterView {
+    position: absolute;
+    top:0; left:0; right:0; bottom:0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: inherit;
+  }
+
+  /* Envelope styles */
+  .letter-wrapper {
+    perspective: 1200px;
+    width: 90vw;
+    max-width: 400px;
+    height: 600px;
+    position: relative;
+  }
+  .envelope {
+    width: 100%;
+    height: 100%;
+    background: #fff8e7;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+    transform-style: preserve-3d;
+    transform-origin: top center;
+    cursor: pointer;
+    transition: transform 1s ease;
+  }
+  .envelope::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 55%;
+    background: linear-gradient(135deg, #ffc93c, #ffb347);
+    border-radius: 12px 12px 90px 90px / 130px 130px 90px 90px;
+    transform-origin: bottom center;
+    transform-style: preserve-3d;
+    box-shadow: inset 0 0 15px rgba(255,255,255,0.4),
+                0 5px 8px rgba(0,0,0,0.15);
+    z-index: 10;
+    transition: transform 1s ease;
+  }
+  .open .envelope {
+    transform: rotateX(140deg);
+    cursor: default;
+  }
+  .open .envelope::before {
+    transform: rotateX(140deg);
+  }
+  /* Instruction text for envelope */
+  .instruction {
+    position: absolute;
+    bottom: -50px;
+    width: 100%;
+    text-align: center;
+    font-size: 1rem;
+    color: #8c7d47;
+    font-style: italic;
+    user-select: none;
+  }
+
+  /* Letter full page styles */
+  #letterView {
+    background: linear-gradient(135deg, #fff8f0, #fceabb);
+    flex-direction: column;
+    padding: 40px 30px;
+    box-sizing: border-box;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.7s ease;
+  }
+  #letterView.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #letterView h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #d87c40;
+    text-align: center;
+    user-select: text;
+  }
+  #letterView p {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    color: #4a3e12;
+    text-align: center;
+    user-select: text;
+  }
+  #letterView .heart {
+    font-size: 3rem;
+    color: #e94e77;
+    animation: heartbeat 1.5s infinite;
+    user-select: none;
+    margin-bottom: 3rem;
+  }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+  #closeBtn {
+    background: #d87c40;
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 12px 28px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 5px 12px rgba(216,124,64,0.6);
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  #closeBtn:hover {
+    background: #b15f27;
+  }
+</style>
+</head>
+<body>
+  <!-- Envelope closed view -->
+  <div id="envelopeView" aria-label="Sobre cerrado con mensaje de carta" role="main">
+    <div class="letter-wrapper" tabindex="0" aria-label="Sobre cerrado, presiona para abrir la carta">
+      <div class="envelope" id="envelope" role="button" tabindex="0" aria-pressed="false" aria-describedby="instruction" aria-label="Abrir la carta"></div>
+      <div class="instruction" id="instruction">Toca o presiona Enter para abrir la carta</div>
+    </div>
+  </div>
+
+  <!-- Letter full page view, hidden initially -->
+  <main id="letterView" aria-label="Carta abierta con mensaje">
+    <h1>FELIZ DÍA INTERNACIONAL<br/>DE LA MUJER MARÍTIMA</h1>
+    <p>Mi amor, eres la luz que guía mis días y la fuerza que impulsa mis sueños. 🌊⛵<br/>
+    Gracias por ser como eres, fuerte, hermosa y única. Te adoro infinitamente.</p>
+    <div class="heart" aria-hidden="true">❤️</div>
+    <button id="closeBtn" aria-label="Cerrar la carta y volver al sobre">Cerrar carta</button>
+  </main>
+
+<script>
+  (function(){
+    const envelopeView = document.getElementById('envelopeView');
+    const letterView = document.getElementById('letterView');
+    const envelope = document.getElementById('envelope');
+    const closeBtn = document.getElementById('closeBtn');
+    const letterWrapper = envelope.parentElement;
+
+    // Open envelope animation and then show full letter view
+    function openEnvelope() {
+      if(envelope.classList.contains('open')) return;
+      envelope.classList.add('open');
+      envelope.setAttribute('aria-pressed', 'true');
+      // Disable cursor after opening
+      envelope.style.cursor = 'default';
+      letterWrapper.setAttribute('aria-label', 'Sobre abierto');
+
+      // After animation (approx 1s), switch views
+      setTimeout(() => {
+        envelopeView.style.display = 'none';
+        letterView.classList.add('visible');
+      }, 1100);
+    }
+
+    // Close letter and go back to envelope view
+    function closeLetter() {
+      letterView.classList.remove('visible');
+      envelopeView.style.display = 'flex';
+      envelope.classList.remove('open');
+      envelope.setAttribute('aria-pressed', 'false');
+      envelope.style.cursor = 'pointer';
+      letterWrapper.setAttribute('aria-label', 'Sobre cerrado, presiona para abrir la carta');
+      envelope.focus();
+    }
+
+    // Envelope click and key events to open
+    envelope.addEventListener('click', openEnvelope);
+    envelope.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openEnvelope();
+      }
+    });
+
+    // Accessibility: let wrapper open envelope too
+    letterWrapper.addEventListener('keydown', (e) => {
+      if((e.key === 'Enter' || e.key === ' ') && e.target === letterWrapper) {
+        e.preventDefault();
+        openEnvelope();
+      }
+    });
+
+    // Close button event
+    closeBtn.addEventListener('click', closeLetter);
+    closeBtn.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        closeLetter();
+      }
+    });
+  })();
+</script>
+</body>
+</html>
+
+
